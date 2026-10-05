@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  e2e-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e2e-mcp-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - E2E_API_KEY=${E2E_API_KEY}
+      - E2E_AUTH_TOKEN=${E2E_AUTH_TOKEN}
+      - E2E_PROJECT_ID=${E2E_PROJECT_ID}
+      - E2E_LOCATION=${E2E_LOCATION:-DEL-1}
+      - PORT=3000
+      - HOST=0.0.0.0
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

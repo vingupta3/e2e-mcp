@@ -1,0 +1,44 @@
+{
+  "name": "e2e-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) Server for E2E Networks Cloud REST API & TIR AI Platform",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "e2e-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "serve": "node dist/index.js --http",
+    "dev": "tsx src/index.ts",
+    "dev:http": "tsx src/index.ts --http",
+    "test": "tsx test/server.test.ts"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "e2e-networks",
+    "cloud",
+    "tir",
+    "claude",
+    "ai",
+    "infrastructure"
+  ],
+  "author": "E2E Cloud Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
