@@ -132,26 +132,44 @@ Production-ready [Model Context Protocol (MCP)](https://modelcontextprotocol.io/
 
 ---
 
-## ⚙️ Configuration & Credentials
+## ⚡ AWS-Style Profile Setup (Recommended)
 
-Create a `.env` file (or set environment variables in your shell / Claude config):
+Just like AWS uses `~/.aws/credentials` and `~/.aws/config` with named profiles (e.g. `[default]`, `[realbetter-account]`), the E2E MCP Server uses `~/.e2e/credentials` and `~/.e2e/config`.
 
-```env
-# E2E Networks API Key (From MyAccount -> Security / API Tokens)
-E2E_API_KEY=your_e2e_api_key
+### 1. Configure Credentials (like `aws configure`)
+Run the interactive setup wizard:
+```bash
+# Configure default profile
+node dist/index.js configure
 
-# E2E Networks Auth/Bearer Token
-E2E_AUTH_TOKEN=your_e2e_auth_token
-
-# Default Project ID (optional: if omitted, defaults to your default project)
-E2E_PROJECT_ID=12345
-
-# Default Location (default: DEL-1)
-E2E_LOCATION=DEL-1
-
-# Optional Port for Hosted HTTP/SSE Mode (default: 3000)
-PORT=3000
+# Or configure a specific named profile (e.g. realbetter-account)
+node dist/index.js configure --profile realbetter-account
 ```
+You can also set credentials non-interactively via flags:
+```bash
+node dist/index.js configure \
+  --profile realbetter-account \
+  --api-key YOUR_E2E_API_KEY \
+  --auth-token YOUR_E2E_AUTH_TOKEN \
+  --project-id 12345 \
+  --location DEL-1
+```
+This stores your credentials securely in `~/.e2e/credentials` (with `0600` permissions) and configuration in `~/.e2e/config`.
+
+### 2. One-Command Auto-Installation into Claude & Cursor
+Just like `aws-mcp` is registered seamlessly in Claude Desktop and Cursor without hardcoding secrets:
+```bash
+# Auto-configure both Claude Desktop and Cursor
+node dist/index.js install --profile realbetter-account
+```
+This automatically updates:
+- **Claude Desktop**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Cursor**: `~/.cursor/mcp.json`
+(creating automatic timestamped `.bak` backups before modifying).
+
+---
+
+## ⚙️ Alternative Configuration Methods (Environment Variables)
 
 ---
 
