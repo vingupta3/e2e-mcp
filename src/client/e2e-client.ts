@@ -42,10 +42,18 @@ export const KNOWN_LOCATIONS = ['Delhi', 'Mumbai'];
 export function normalizeLocation(loc?: string): string | undefined {
   if (!loc) return undefined;
   const cleaned = loc.trim().toLowerCase();
-  if (['del', 'delhi', 'del-1', 'delhi-1', 'ncr', 'ncr-1', 'delhi-ncr'].includes(cleaned)) {
+  if (
+    cleaned.includes('del') ||
+    cleaned.includes('delhi') ||
+    cleaned.includes('ncr')
+  ) {
     return 'Delhi';
   }
-  if (['bom', 'mumbai', 'bom-1', 'mumbai-1'].includes(cleaned)) {
+  if (
+    cleaned.includes('bom') ||
+    cleaned.includes('mum') ||
+    cleaned.includes('mumbai')
+  ) {
     return 'Mumbai';
   }
   return loc.charAt(0).toUpperCase() + loc.slice(1);

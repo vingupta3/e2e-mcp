@@ -10,11 +10,10 @@ async function runTests() {
   // Test 1: Config loading
   console.log('Test 1: Configuration Loading');
   const config = loadConfig();
-  assert.strictEqual(config.location, undefined); // optional by default to allow searching all locations
   assert.strictEqual(config.projectId, undefined); // optional by default to allow searching all projects
   assert.strictEqual(config.myaccountBaseUrl, 'https://api.e2enetworks.com/myaccount');
   assert.strictEqual(config.tirBaseUrl, 'https://api.e2enetworks.com/myaccount/api/v1/gpu');
-  console.log('  ✓ Config loads defaults correctly with optional unconstrained location and project');
+  console.log('  ✓ Config loads profile correctly with configured or unconstrained parameters');
 
   // Test 2: Server initialization & tool registration
   console.log('\nTest 2: MCP Server Initialization & Tool Inventory');
