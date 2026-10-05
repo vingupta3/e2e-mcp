@@ -27,6 +27,10 @@ export function getAntigravityConfigPath(): string {
   return path.join(os.homedir(), '.gemini', 'config', 'mcp_config.json');
 }
 
+export function getAntigravityIdeConfigPath(): string {
+  return path.join(os.homedir(), '.gemini', 'antigravity-ide', 'mcp_config.json');
+}
+
 export function getCodexConfigPath(): string {
   return path.join(os.homedir(), '.codex', 'config.toml');
 }
@@ -184,11 +188,16 @@ export async function runInstallCli(args: string[]): Promise<void> {
     updateJsonConfig(cursorPath, 'e2e-cloud', serverConfig, 'Cursor');
   }
 
-  // 3. Google Antigravity
+  // 3. Google Antigravity (CLI & IDE)
   if (target === 'antigravity' || target === 'all') {
     console.log(`\n[3/4] Configuring Google Antigravity (profile: [${profile}])...`);
     const antigravityPath = getAntigravityConfigPath();
-    updateJsonConfig(antigravityPath, 'e2e-cloud', serverConfig, 'Google Antigravity');
+    updateJsonConfig(antigravityPath, 'e2e-cloud', serverConfig, 'Google Antigravity CLI');
+
+    const antigravityIdePath = getAntigravityIdeConfigPath();
+    if (fs.existsSync(path.dirname(antigravityIdePath))) {
+      updateJsonConfig(antigravityIdePath, 'e2e-cloud', serverConfig, 'Google Antigravity IDE');
+    }
   }
 
   // 4. Codex
