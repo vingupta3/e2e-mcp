@@ -4,7 +4,7 @@ import os from 'os';
 
 export interface InstallOptions {
   profile?: string;
-  target?: 'claude' | 'cursor' | 'all';
+  target?: 'claude' | 'cursor' | 'antigravity' | 'codex' | 'all';
   mode?: 'stdio' | 'sse';
   port?: number;
 }
@@ -21,6 +21,14 @@ export function getClaudeDesktopConfigPath(): string {
 
 export function getCursorConfigPath(): string {
   return path.join(os.homedir(), '.cursor', 'mcp.json');
+}
+
+export function getAntigravityConfigPath(): string {
+  return path.join(os.homedir(), '.gemini', 'config', 'mcp_config.json');
+}
+
+export function getCodexConfigPath(): string {
+  return path.join(os.homedir(), '.codex', 'config.toml');
 }
 
 function updateJsonConfig(
@@ -40,7 +48,6 @@ function updateJsonConfig(
       const content = fs.readFileSync(filePath, 'utf-8');
       try {
         config = JSON.parse(content);
-        // Create backup
         const backupPath = `${filePath}.bak.${Date.now()}`;
         fs.writeFileSync(backupPath, content);
         console.log(`  ✓ Backup created at: ${backupPath}`);
@@ -64,11 +71,67 @@ function updateJsonConfig(
   }
 }
 
-export async function runInstallCli(args: string[]): Promise<void> {
-  console.log('\n🚀 Installing E2E Networks MCP Server for Claude & Cursor (AWS-style)\n');
+function updateCodexTomlConfig(
+  filePath: string,
+  serverName: string,
+  serverPath: string,
+  profile: string
+): boolean {
+  try {
+    if (!fs.existsSync(filePath)) {
+      console.log(`  ℹ️ Codex config file not found at ${filePath}, skipping.`);
+      return false;
+    }
 
-  let profile = 'default';
-  let target: 'claude' | 'cursor' | 'all' = 'all';
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const backupPath = `${filePath}.bak.${Date.now()}`;
+    fs.writeFileSync(backupPath, content);
+    console.log(`  ✓ Backup created at: ${backupPath}`);
+
+    const serverSection = `[mcp_servers.${serverName}]`;
+    const tomlBlock = `[mcp_servers.${serverName}]
+command = "node"
+args = [
+    "${serverPath}",
+    "--profile",
+    "${profile}",
+]
+
+[mcp_servers.${serverName}.env]
+E2E_PROFILE = "${profile}"
+`;
+
+    let newContent = content;
+
+    // Check if [mcp_servers.e2e-cloud] already exists
+    if (content.includes(serverSection)) {
+      // Replace existing block
+      const regex = new RegExp(`\\[mcp_servers\\.${serverName}\\][\\s\\S]*?(?=(\\n\\[|$))`, 'g');
+      newContent = content.replace(regex, tomlBlock.trim());
+    } else {
+      // Find a suitable place to insert (before [shell_environment_policy] or at end)
+      const insertMarker = '[shell_environment_policy';
+      if (content.includes(insertMarker)) {
+        newContent = content.replace(insertMarker, `${tomlBlock}\n${insertMarker}`);
+      } else {
+        newContent = `${content.trim()}\n\n${tomlBlock}`;
+      }
+    }
+
+    fs.writeFileSync(filePath, newContent, 'utf-8');
+    console.log(`  ✅ Successfully updated Codex configuration at: ${filePath}`);
+    return true;
+  } catch (err: any) {
+    console.error(`  ❌ Failed to update Codex config at ${filePath}:`, err.message);
+    return false;
+  }
+}
+
+export async function runInstallCli(args: string[]): Promise<void> {
+  console.log('\n🚀 Installing E2E Networks MCP Server for Claude, Cursor, Antigravity & Codex\n');
+
+  let profile = 'rb-e2e-account';
+  let target: 'claude' | 'cursor' | 'antigravity' | 'codex' | 'all' = 'all';
   let mode: 'stdio' | 'sse' = 'stdio';
   let port = 3000;
 
@@ -88,9 +151,7 @@ export async function runInstallCli(args: string[]): Promise<void> {
     }
   }
 
-  // Absolute path to the compiled entrypoint
   const serverPath = path.resolve(process.cwd(), 'dist', 'index.js');
-
   const serverArgs = [serverPath];
   if (profile && profile !== 'default') {
     serverArgs.push('--profile', profile);
@@ -105,23 +166,41 @@ export async function runInstallCli(args: string[]): Promise<void> {
           command: 'node',
           args: serverArgs,
           env: {
-            // Tell server which profile to use from ~/.e2e/credentials
             E2E_PROFILE: profile,
           },
         };
 
+  // 1. Claude Desktop
   if (target === 'claude' || target === 'all') {
-    console.log(`Configuring Claude Desktop (profile: [${profile}], mode: ${mode})...`);
+    console.log(`\n[1/4] Configuring Claude Desktop (profile: [${profile}])...`);
     const claudePath = getClaudeDesktopConfigPath();
     updateJsonConfig(claudePath, 'e2e-cloud', serverConfig, 'Claude Desktop');
   }
 
+  // 2. Cursor
   if (target === 'cursor' || target === 'all') {
-    console.log(`Configuring Cursor (profile: [${profile}], mode: ${mode})...`);
+    console.log(`\n[2/4] Configuring Cursor (profile: [${profile}])...`);
     const cursorPath = getCursorConfigPath();
     updateJsonConfig(cursorPath, 'e2e-cloud', serverConfig, 'Cursor');
   }
 
-  console.log('\n🎉 Setup complete! Just like AWS, credentials are read automatically from ~/.e2e/credentials.');
-  console.log('Restart Claude Desktop or Cursor to begin using all E2E Cloud tools seamlessly!\n');
+  // 3. Google Antigravity
+  if (target === 'antigravity' || target === 'all') {
+    console.log(`\n[3/4] Configuring Google Antigravity (profile: [${profile}])...`);
+    const antigravityPath = getAntigravityConfigPath();
+    updateJsonConfig(antigravityPath, 'e2e-cloud', serverConfig, 'Google Antigravity');
+  }
+
+  // 4. Codex
+  if (target === 'codex' || target === 'all') {
+    console.log(`\n[4/4] Configuring Codex (profile: [${profile}])...`);
+    const codexPath = getCodexConfigPath();
+    updateCodexTomlConfig(codexPath, 'e2e-cloud', serverPath, profile);
+  }
+
+  console.log('\n🎉 Multi-assistant configuration complete!');
+  console.log(`Active Profile: [${profile}]`);
+  console.log('AWS profile remains untouched and active.');
+  console.log('To update your E2E credentials anytime, run:');
+  console.log(`  node dist/index.js configure --profile ${profile}\n`);
 }
