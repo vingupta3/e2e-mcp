@@ -1,0 +1,32 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Typecheck & Build
+      run: npm run build
+
+    - name: Run Test Suite
+      run: npm test
+
+    - name: Verify Docker Build
+      run: docker build -t e2e-mcp-server:latest .
