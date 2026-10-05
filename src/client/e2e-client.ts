@@ -34,6 +34,23 @@ export class E2EClientError extends Error {
   }
 }
 
+export const KNOWN_LOCATIONS = ['Delhi', 'Mumbai'];
+
+/**
+ * Normalizes location names/codes to the format expected by E2E API (e.g. "Delhi", "Mumbai")
+ */
+export function normalizeLocation(loc?: string): string | undefined {
+  if (!loc) return undefined;
+  const cleaned = loc.trim().toLowerCase();
+  if (['del', 'delhi', 'del-1', 'delhi-1', 'ncr', 'ncr-1', 'delhi-ncr'].includes(cleaned)) {
+    return 'Delhi';
+  }
+  if (['bom', 'mumbai', 'bom-1', 'mumbai-1'].includes(cleaned)) {
+    return 'Mumbai';
+  }
+  return loc.charAt(0).toUpperCase() + loc.slice(1);
+}
+
 export class E2EClient {
   private config: E2EConfig;
 
@@ -85,8 +102,9 @@ export class E2EClient {
     if (projectId !== undefined) {
       url.searchParams.set('project_id', String(projectId));
     }
-    if (location) {
-      url.searchParams.set('location', location);
+    const resolvedLocation = normalizeLocation(location);
+    if (resolvedLocation) {
+      url.searchParams.set('location', resolvedLocation);
     }
 
     // Append custom query parameters
@@ -136,11 +154,11 @@ export class E2EClient {
 
       if (!response.ok) {
         const errorMessage =
-          (responseData && typeof responseData === 'object' && (responseData.message || responseData.error || responseData.detail || responseData.description)) ||
+          (responseData && typeof responseData === 'object' && (responseData.message || responseData.error || responseData.detail || responseData.description || responseData.errors)) ||
           `E2E API returned HTTP ${response.status}: ${response.statusText}`;
 
         throw new E2EClientError(
-          `E2E API Error (${response.status}): ${errorMessage}`,
+          `E2E API Error (${response.status}): ${typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage)}`,
           response.status,
           responseData
         );
@@ -166,6 +184,72 @@ export class E2EClient {
   }
 
   /**
+   * Performs an API request across all supported locations when location is omitted,
+   * aggregating the results. If a location is explicitly provided, queries just that location.
+   */
+  public async requestAcrossLocations<T = any>(options: RequestOptions): Promise<E2EResponse<T>> {
+    const loc = options.location || this.config.location;
+    if (loc) {
+      return this.request<T>({
+        ...options,
+        location: normalizeLocation(loc),
+      });
+    }
+
+    // Query across all known locations concurrently
+    const promises = KNOWN_LOCATIONS.map(async (l) => {
+      try {
+        const res = await this.request<any>({
+          ...options,
+          location: l,
+        });
+        return { location: l, response: res, error: null };
+      } catch (err: any) {
+        return { location: l, response: null, error: err };
+      }
+    });
+
+    const results = await Promise.all(promises);
+    const successful = results.filter((r) => r.response !== null);
+
+    if (successful.length === 0) {
+      const firstError = results[0]?.error;
+      throw firstError || new E2EClientError('Request failed across all locations', 500);
+    }
+
+    // If result data is array, concatenate them
+    const firstData = successful[0].response!.data;
+    let combinedData: any;
+
+    if (Array.isArray(firstData)) {
+      const merged: any[] = [];
+      for (const item of successful) {
+        const arr = item.response!.data;
+        if (Array.isArray(arr)) {
+          for (const entry of arr) {
+            if (typeof entry === 'object' && entry !== null) {
+              merged.push({ ...entry, location: entry.location || item.location });
+            } else {
+              merged.push(entry);
+            }
+          }
+        }
+      }
+      combinedData = merged;
+    } else {
+      combinedData = firstData;
+    }
+
+    return {
+      success: true,
+      status: 200,
+      data: combinedData as T,
+      raw: successful.map((s) => ({ location: s.location, raw: s.response!.raw })),
+      message: `Aggregated results across locations: ${successful.map((s) => s.location).join(', ')}`,
+    };
+  }
+
+  /**
    * Test API connectivity and credentials validity against E2E Cloud
    */
   public async testConnection(): Promise<{ ok: boolean; message: string; details?: any }> {
@@ -173,16 +257,16 @@ export class E2EClient {
       if (!this.config.apiKey && !this.config.authToken) {
         return {
           ok: false,
-          message: 'No credentials configured. Please set E2E_API_KEY and E2E_AUTH_TOKEN in environment or .env file.',
+          message: 'No credentials configured. Please set E2E_API_KEY and E2E_AUTH_TOKEN in environment or ~/.e2e/credentials.',
         };
       }
 
-      // Try checking OS images or project details, which are lightweight read-only calls
+      // Query account profile detail which is global and location-agnostic
       const res = await this.request({
         method: 'GET',
-        path: '/api/v1/images/os-category/',
+        path: '/api/v1/accounts/profile/detail/',
         service: 'myaccount',
-        timeoutMs: 8000,
+        timeoutMs: 10000,
       });
 
       return {

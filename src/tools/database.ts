@@ -13,7 +13,7 @@ export function registerDatabaseTools(server: McpServer, client: E2EClient): voi
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/rds/cluster/',
           projectId: args.project_id,
@@ -168,7 +168,7 @@ export function registerDatabaseTools(server: McpServer, client: E2EClient): voi
           method: 'GET',
           path: '/api/v1/rds/plans/',
           projectId: args.project_id,
-          location: args.location,
+          location: args.location || 'Delhi',
         });
 
         return {

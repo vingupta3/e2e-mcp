@@ -13,7 +13,7 @@ export function registerComputeTools(server: McpServer, client: E2EClient): void
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/nodes/',
           projectId: args.project_id,
@@ -231,7 +231,7 @@ export function registerComputeTools(server: McpServer, client: E2EClient): void
           path: '/api/v1/images/',
           queryParams: { category: args.category },
           projectId: args.project_id,
-          location: args.location,
+          location: args.location || 'Delhi',
         });
 
         return {
@@ -257,7 +257,7 @@ export function registerComputeTools(server: McpServer, client: E2EClient): void
     'List available OS categories, distributions (Ubuntu, Debian, CentOS, AlmaLinux, Windows), and version templates.',
     {
       project_id: z.number().optional().describe('Project ID.'),
-      location: z.string().optional().describe('Location/region code.'),
+      location: z.string().optional().describe('Location/region code (defaults to Delhi if not specified).'),
     },
     async (args) => {
       try {
@@ -265,7 +265,7 @@ export function registerComputeTools(server: McpServer, client: E2EClient): void
           method: 'GET',
           path: '/api/v1/images/os-category/',
           projectId: args.project_id,
-          location: args.location,
+          location: args.location || 'Delhi',
         });
 
         return {

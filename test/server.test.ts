@@ -113,9 +113,9 @@ async function runTests() {
   assert.strictEqual(myaccountRes.data[0].name, 'web-prod-01');
   assert.ok(lastReceivedUrl.includes('apikey=test-api-key-12345'), 'apikey query param included');
   assert.ok(lastReceivedUrl.includes('project_id=999'), 'project_id query param included');
-  assert.ok(lastReceivedUrl.includes('location=NCR-1'), 'location query param included');
+  assert.ok(lastReceivedUrl.includes('location=Delhi'), 'location query param normalized to Delhi');
   assert.strictEqual(lastReceivedHeaders['authorization'], 'Bearer test-bearer-token-67890');
-  console.log('  ✓ MyAccount request sent with correct apikey, project_id, location, and Bearer token');
+  console.log('  ✓ MyAccount request sent with correct apikey, project_id, normalized location, and Bearer token');
 
   // Test 4b: POST Request with JSON Body
   await mockClient.request({
@@ -143,7 +143,27 @@ async function runTests() {
   assert.strictEqual(tirRes.data[0].sku, 'H100-SXM5-80GB');
   console.log('  ✓ TIR platform request routed and executed correctly');
 
-  // Test 4d: Error Handling on 404
+  // Test 4d: Multi-location aggregation when location is omitted
+  const unconstrainedClient = new E2EClient({
+    apiKey: 'test-api-key-12345',
+    authToken: 'test-bearer-token-67890',
+    myaccountBaseUrl: mockBaseUrl,
+    tirBaseUrl: mockBaseUrl,
+    port: 3000,
+    host: '0.0.0.0',
+  });
+
+  const multiRes = await unconstrainedClient.requestAcrossLocations({
+    method: 'GET',
+    path: '/api/v1/nodes/',
+  });
+
+  assert.strictEqual(multiRes.status, 200);
+  assert.ok(Array.isArray(multiRes.data), 'Aggregated data is an array');
+  assert.ok(multiRes.data.length >= 2, 'Aggregated across Delhi and Mumbai');
+  console.log('  ✓ requestAcrossLocations correctly queries all regions and aggregates responses');
+
+  // Test 4e: Error Handling on 404
   try {
     await mockClient.request({
       method: 'GET',

@@ -15,7 +15,7 @@ export function registerNetworkTools(server: McpServer, client: E2EClient): void
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/vpc/list/',
           queryParams: { page_no: args.page_no, per_page: args.per_page },
@@ -131,7 +131,7 @@ export function registerNetworkTools(server: McpServer, client: E2EClient): void
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/reserve_ips/',
           projectId: args.project_id,
@@ -317,7 +317,7 @@ export function registerNetworkTools(server: McpServer, client: E2EClient): void
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/appliances/',
           projectId: args.project_id,

@@ -13,7 +13,7 @@ export function registerKubernetesTools(server: McpServer, client: E2EClient): v
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/kubernetes/',
           projectId: args.project_id,

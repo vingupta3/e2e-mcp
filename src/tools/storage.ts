@@ -15,7 +15,7 @@ export function registerStorageTools(server: McpServer, client: E2EClient): void
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/block_storage/',
           queryParams: { page_no: args.page_no, per_page: args.per_page },
@@ -313,7 +313,7 @@ export function registerStorageTools(server: McpServer, client: E2EClient): void
     },
     async (args) => {
       try {
-        const response = await client.request({
+        const response = await client.requestAcrossLocations({
           method: 'GET',
           path: '/api/v1/efs/',
           projectId: args.project_id,
