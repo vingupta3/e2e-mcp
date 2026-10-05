@@ -4,7 +4,7 @@ import os from 'os';
 
 export interface InstallOptions {
   profile?: string;
-  target?: 'claude' | 'cursor' | 'antigravity' | 'codex' | 'all';
+  target?: 'claude' | 'cursor' | 'antigravity' | 'codex' | 'claude-code' | 'claudecode' | 'all';
   mode?: 'stdio' | 'sse';
   port?: number;
 }
@@ -33,6 +33,10 @@ export function getAntigravityIdeConfigPath(): string {
 
 export function getCodexConfigPath(): string {
   return path.join(os.homedir(), '.codex', 'config.toml');
+}
+
+export function getClaudeCodeConfigPath(): string {
+  return path.join(os.homedir(), '.claude.json');
 }
 
 function updateJsonConfig(
@@ -135,7 +139,7 @@ export async function runInstallCli(args: string[]): Promise<void> {
   console.log('\n🚀 Installing E2E Networks MCP Server for Claude, Cursor, Antigravity & Codex\n');
 
   let profile = 'rb-e2e-account';
-  let target: 'claude' | 'cursor' | 'antigravity' | 'codex' | 'all' = 'all';
+  let target: 'claude' | 'cursor' | 'antigravity' | 'codex' | 'claude-code' | 'claudecode' | 'all' = 'all';
   let mode: 'stdio' | 'sse' = 'stdio';
   let port = 3000;
 
@@ -202,9 +206,18 @@ export async function runInstallCli(args: string[]): Promise<void> {
 
   // 4. Codex
   if (target === 'codex' || target === 'all') {
-    console.log(`\n[4/4] Configuring Codex (profile: [${profile}])...`);
+    console.log(`\n[4/5] Configuring Codex (profile: [${profile}])...`);
     const codexPath = getCodexConfigPath();
     updateCodexTomlConfig(codexPath, 'e2e-cloud', serverPath, profile);
+  }
+
+  // 5. Claude Code CLI
+  if (target === 'claude-code' || target === 'claudecode' || target === 'all') {
+    console.log(`\n[5/5] Configuring Claude Code CLI (profile: [${profile}])...`);
+    const claudeCodePath = getClaudeCodeConfigPath();
+    if (fs.existsSync(claudeCodePath)) {
+      updateJsonConfig(claudeCodePath, 'e2e-cloud', serverConfig, 'Claude Code CLI');
+    }
   }
 
   console.log('\n🎉 Multi-assistant configuration complete!');

@@ -11,7 +11,7 @@ export interface E2EConfig {
   apiKey: string;
   authToken: string;
   projectId?: number;
-  location: string;
+  location?: string;
   myaccountBaseUrl: string;
   tirBaseUrl: string;
   port: number;
@@ -160,14 +160,14 @@ export function loadConfig(profileOverride?: string): E2EConfig {
     profileCreds['project_id'];
   const projectId = rawProjectId && !isNaN(Number(rawProjectId)) ? Number(rawProjectId) : undefined;
 
-  // Resolve Location: env > profile config > profile creds > 'DEL-1'
+  // Resolve Location: env > profile config > profile creds > undefined (optional)
   const location =
     process.env.E2E_LOCATION ||
     profileConfig['location'] ||
     profileConfig['region'] ||
     profileConfig['e2e_location'] ||
     profileCreds['location'] ||
-    'DEL-1';
+    undefined;
 
   const myaccountBaseUrl = (
     process.env.E2E_MYACCOUNT_BASE_URL ||

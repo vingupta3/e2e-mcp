@@ -78,14 +78,14 @@ export async function runConfigureCli(args: string[]): Promise<void> {
 
       projectId = await askQuestion(
         rl,
-        'Default Project ID (leave empty if using default project)',
+        'Default Project ID (optional: leave empty to query across all/default projects)',
         existingConfig['project_id'] || ''
       );
 
       location = await askQuestion(
         rl,
-        'Default Region / Location (e.g. DEL-1, NCR-1)',
-        existingConfig['location'] || 'DEL-1'
+        'Default Region / Location (optional: leave empty to query across all locations)',
+        existingConfig['location'] || ''
       );
     } finally {
       rl.close();
@@ -95,7 +95,7 @@ export async function runConfigureCli(args: string[]): Promise<void> {
     apiKey = apiKey || existingCreds['api_key'] || '';
     authToken = authToken || existingCreds['auth_token'] || '';
     projectId = projectId || existingConfig['project_id'] || '';
-    location = location || existingConfig['location'] || 'DEL-1';
+    location = location || existingConfig['location'] || '';
   }
 
   // Update credentials
@@ -109,8 +109,16 @@ export async function runConfigureCli(args: string[]): Promise<void> {
   if (!configAll[profile]) {
     configAll[profile] = {};
   }
-  if (projectId) configAll[profile]['project_id'] = projectId;
-  if (location) configAll[profile]['location'] = location;
+  if (projectId) {
+    configAll[profile]['project_id'] = projectId;
+  } else {
+    delete configAll[profile]['project_id'];
+  }
+  if (location) {
+    configAll[profile]['location'] = location;
+  } else {
+    delete configAll[profile]['location'];
+  }
 
   writeIniFile(credentialsPath, credentialsAll, false);
   writeIniFile(configPath, configAll, true);
