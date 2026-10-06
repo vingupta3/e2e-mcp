@@ -1,5 +1,10 @@
 # E2E Networks Cloud & TIR MCP Server
 
+[![npm version](https://img.shields.io/npm/v/e2e-mcp.svg?color=cb3837)](https://www.npmjs.com/package/e2e-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/e2e-mcp.svg)](https://www.npmjs.com/package/e2e-mcp)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/vingupta3/e2e-mcp)](https://github.com/vingupta3/e2e-mcp/releases)
+
 Production-ready [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server providing a complete abstraction layer between **Claude** (or any MCP-compatible AI client) and the **E2E Networks Cloud REST APIs** ([MyAccount](https://docs.e2enetworks.com/api/myaccount/) and [TIR AI/ML Platform](https://docs.e2enetworks.com/api/tir/)).
 
 ---
