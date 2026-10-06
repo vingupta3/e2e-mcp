@@ -5,213 +5,86 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/vingupta3/e2e-mcp)](https://github.com/vingupta3/e2e-mcp/releases)
 
-Production-ready [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server providing a complete abstraction layer between **Claude** (or any MCP-compatible AI client) and the **E2E Networks Cloud REST APIs** ([MyAccount](https://docs.e2enetworks.com/api/myaccount/) and [TIR AI/ML Platform](https://docs.e2enetworks.com/api/tir/)).
+The official [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for **E2E Networks Cloud** and the **TIR AI/ML Platform**. 
+
+Connect **Claude Desktop**, **Cursor**, **Google Antigravity**, and **Codex** directly to your E2E Cloud infrastructure to provision GPUs, manage nodes, control databases, orchestrate Kubernetes, and run AI workloads.
 
 ---
 
-## 🏗️ Architecture & Integration Flow
+## ⚡ Quickstart (Zero Installation via `npx`)
 
-```
-┌─────────────────────────────────┐
-│     Claude / AI Assistant       │
-│  (Claude Desktop / Web / CLI)   │
-└────────────────┬────────────────┘
-                 │ MCP Protocol (JSON-RPC over Stdio or SSE)
-                 ▼
-┌─────────────────────────────────┐
-│     E2E Networks MCP Server     │
-│   • Request Validation (Zod)    │
-│   • Auth & Project Scoping      │
-│   • Multi-surface Routing       │
-│   • Error Normalization         │
-└────────────────┬────────────────┘
-                 │ Authenticated HTTPS (API Key + Bearer Token)
-                 ▼
-┌─────────────────────────────────┐
-│    E2E Networks REST APIs       │
-│   • /myaccount/api/v1 (Cloud)   │
-│   • /myaccount/api/v1/gpu (TIR) │
-└────────────────┬────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────┐
-│       E2E Cloud Services        │
-│ Nodes • GPUs • Storage • DBaaS  │
-│ VPC • K8s • TIR AI Labs • SKUs  │
-└─────────────────────────────────┘
-```
+You do **not** need to clone this repository or install anything globally. You can set it up in two simple commands using `npx`:
 
----
-
-## 🚀 Features
-
-- **Dual Transport Support**:
-  - **Stdio Mode**: Direct sub-process integration for local Claude Desktop, Claude Code, and Antigravity.
-  - **Hosted HTTP / SSE Mode**: Standalone daemon with Server-Sent Events (`/sse`), message processing (`/messages`), health checks (`/health`), and a built-in Web Dashboard (`/`).
-- **Comprehensive Cloud Coverage**:
-  - **Compute & GPUs**: Provision, manage, reboot, snapshot, resize, and monitor compute nodes and GPU instances.
-  - **Storage**: Block storage volumes, attached disks, SFS (shared file system), and EOS object storage buckets.
-  - **Networking & Security**: VPCs, subnets, static public reserved IPs, firewalls, security groups, and load balancers (ALB/NLB).
-  - **Databases (DBaaS)**: Managed MySQL, PostgreSQL, MariaDB, Kafka, Valkey, OpenSearch clusters.
-  - **Kubernetes**: Managed clusters, node pool operations, and kubeconfig retrieval.
-  - **TIR AI/ML Cloud**: AI Labs / Jupyter notebooks, NVIDIA GPU SKUs (H100, A100, L40S, L4, etc.), model endpoints, datasets, and distributed training clusters.
-  - **Universal Raw Request Tool (`e2e_raw_request`)**: Allows Claude to call **any** of E2E's 450+ REST endpoints with automatic authentication and error handling.
-- **Robust Authentication & Error Handling**: Automatically merges API keys, Bearer tokens, project IDs, and locations, translating API responses and error codes into clean, actionable feedback for Claude.
-
----
-
-## 🛠️ MCP Tools Inventory
-
-### 1. Compute & GPU Nodes (`src/tools/compute.ts`)
-| Tool Name | Description |
-| :--- | :--- |
-| `e2e_list_nodes` | List all compute nodes and GPU instances with statuses, IPs, and configurations |
-| `e2e_get_node` | Retrieve detailed specs, network interfaces, and disk info for a node |
-| `e2e_create_node` | Launch a new compute or GPU instance (hourly on-demand or committed) |
-| `e2e_node_action` | Perform lifecycle actions: `power_on`, `power_off`, `reboot`, `reinstall`, `rename`, `lock`, `unlock`, `save_images` |
-| `e2e_delete_node` | Permanently terminate and delete a compute node |
-| `e2e_list_plans` | List available compute hardware plans, CPU/RAM configurations, and pricing |
-| `e2e_list_os_images` | List supported operating systems (Ubuntu, Debian, CentOS, Windows, etc.) |
-| `e2e_get_node_health` | Retrieve CPU, memory, and disk health metrics for a node |
-
-### 2. Storage (`src/tools/storage.ts`)
-| Tool Name | Description |
-| :--- | :--- |
-| `e2e_list_volumes` | List all block storage volumes in the project |
-| `e2e_create_volume` | Provision a block storage volume with specified size and IOPS |
-| `e2e_attach_volume` | Attach an unattached block volume to a compute node |
-| `e2e_detach_volume` | Detach a volume from a compute node |
-| `e2e_delete_volume` | Delete an unattached block volume |
-| `e2e_list_buckets` | List EOS (E2E Object Storage) S3-compatible buckets |
-| `e2e_create_bucket` | Create a new object storage bucket |
-| `e2e_delete_bucket` | Delete an empty object storage bucket |
-| `e2e_list_sfs` | List Shared File System (SFS / EFS) instances |
-
-### 3. Networking & Security (`src/tools/network.ts`)
-| Tool Name | Description |
-| :--- | :--- |
-| `e2e_list_vpcs` | List Virtual Private Cloud networks |
-| `e2e_create_vpc` | Create a new VPC network with custom or automatic CIDR |
-| `e2e_delete_vpc` | Delete an existing VPC network |
-| `e2e_list_reserved_ips` | List static public reserved IPs |
-| `e2e_action_reserved_ip` | Attach, detach, or live-reserve a static public IP |
-| `e2e_list_security_groups` | List attached or available security groups for a node |
-| `e2e_attach_security_group` | Attach a security group to a node |
-| `e2e_detach_security_group` | Detach a security group from a node |
-| `e2e_list_load_balancers` | List Application and Network Load Balancers |
-
-### 4. Managed Databases (`src/tools/database.ts`)
-| Tool Name | Description |
-| :--- | :--- |
-| `e2e_list_databases` | List managed DBaaS database clusters (MySQL, PostgreSQL, MariaDB, etc.) |
-| `e2e_get_database` | Get database cluster connection info, topology, and health |
-| `e2e_create_database` | Provision a new managed database cluster |
-| `e2e_database_action` | Execute actions: `start`, `stop`, `restart` |
-| `e2e_list_database_plans` | List available database sizing plans and engine versions |
-
-### 5. Managed Kubernetes (`src/tools/kubernetes.ts`)
-| Tool Name | Description |
-| :--- | :--- |
-| `e2e_list_k8s_clusters` | List managed Kubernetes clusters |
-| `e2e_get_k8s_cluster` | Get cluster details, API endpoint, and status |
-| `e2e_list_k8s_node_pools` | List worker node pools associated with a cluster |
-
-### 6. TIR AI/ML Cloud (`src/tools/tir.ts`)
-| Tool Name | Description |
-| :--- | :--- |
-| `e2e_tir_list_notebooks` | List AI Labs and Jupyter notebook instances |
-| `e2e_tir_create_notebook` | Launch an AI Lab notebook instance with GPU acceleration |
-| `e2e_tir_notebook_action` | Control notebook lifecycle: `start`, `stop`, `reboot` |
-| `e2e_tir_list_gpu_skus` | List available NVIDIA GPU hardware SKUs (H100, A100, L40S, L4, etc.) |
-| `e2e_tir_list_model_endpoints` | List deployed AI/LLM model inference endpoints |
-| `e2e_tir_list_datasets` | List AI training and fine-tuning datasets |
-| `e2e_tir_list_training_clusters` | List managed Slurm / distributed training clusters |
-
-### 7. Platform & Universal REST (`src/tools/platform.ts` & `src/tools/raw.ts`)
-| Tool Name | Description |
-| :--- | :--- |
-| `e2e_list_projects` | List IAM projects and access control scopes |
-| `e2e_get_billing_summary` | Get monthly estimated usage and billing transactions |
-| `e2e_test_connection` | Verify authentication and API connectivity |
-| `e2e_raw_request` | Execute direct HTTP requests against **any** of the 450+ E2E REST endpoints |
-
----
-
-## ⚡ AWS-Style Profile Setup (Recommended)
-
-Just like AWS uses `~/.aws/credentials` and `~/.aws/config` with named profiles (e.g. `[default]`, `[production]`), the E2E MCP Server uses `~/.e2e/credentials` and `~/.e2e/config`.
-
-### 1. Configure Credentials (like `aws configure`)
-Run the interactive setup wizard:
+### Step 1: Configure your E2E credentials
+Run the interactive configuration wizard (like `aws configure`):
 ```bash
-# Configure default profile
-npx e2e-mcp configure
+npx -y e2e-mcp configure
+```
+This prompts for:
+* **E2E API Key** (from [MyAccount → Security / API Tokens](https://myaccount.e2enetworks.com))
+* **E2E Auth Token** (Bearer token)
+* **Default Location** (e.g. `DEL-1` or `NCR-1`)
+* *Saved securely to `~/.e2e/credentials` (chmod 0600)*.
 
-# Or configure a specific named profile (e.g. production)
-npx e2e-mcp configure --profile production
-```
-You can also set credentials non-interactively via flags:
+### Step 2: Auto-install into your AI Assistant
+Automatically register the MCP server in Claude Desktop, Cursor, and Antigravity:
 ```bash
-npx e2e-mcp configure \
-  --profile production \
-  --api-key YOUR_E2E_API_KEY \
-  --auth-token YOUR_E2E_AUTH_TOKEN \
-  --project-id 12345 \
-  --location DEL-1
+npx -y e2e-mcp install
 ```
-This stores your credentials securely in `~/.e2e/credentials` (with `0600` permissions) and configuration in `~/.e2e/config`.
-
-### 2. One-Command Auto-Installation into Claude & Cursor
-Just like `aws-mcp` is registered seamlessly in Claude Desktop, Cursor, Google Antigravity, and Codex without hardcoding secrets:
-```bash
-# Auto-configure all supported AI assistants
-npx e2e-mcp install --profile production
-```
-This automatically updates:
-- **Claude Desktop**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Cursor**: `~/.cursor/mcp.json`
-- **Google Antigravity**: `~/.gemini/config/mcp_config.json`
-- **Codex CLI**: `~/.codex/config.toml`
-(creating automatic timestamped `.bak` backups before modifying).
+Restart your AI assistant, and you're ready!
 
 ---
 
-## ⚙️ Alternative Configuration Methods (Environment Variables)
+## 💻 Manual Setup in AI Assistants
 
----
+If you prefer to configure your assistant's JSON file manually:
 
-## 💻 Setup with Claude Desktop
-
-### Option A: Local Stdio Mode (Recommended for Desktop)
-Edit your Claude Desktop configuration file:
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+### 1. Claude Desktop
+Add to your config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
 
 ```json
 {
   "mcpServers": {
     "e2e-cloud": {
       "command": "npx",
-      "args": ["-y", "e2e-mcp"],
-      "env": {
-        "E2E_API_KEY": "YOUR_API_KEY",
-        "E2E_AUTH_TOKEN": "YOUR_AUTH_TOKEN",
-        "E2E_PROJECT_ID": "YOUR_PROJECT_ID",
-        "E2E_LOCATION": "DEL-1"
-      }
+      "args": ["-y", "e2e-mcp"]
     }
   }
 }
 ```
 
-### Option B: Hosted SSE Mode
-If the server is running as a daemon on `http://localhost:3000`:
+> [!TIP]
+> If you didn't run `npx e2e-mcp configure`, you can pass credentials directly in the `env` block:
+> ```json
+> "env": {
+>   "E2E_API_KEY": "YOUR_API_KEY",
+>   "E2E_AUTH_TOKEN": "YOUR_AUTH_TOKEN",
+>   "E2E_PROJECT_ID": "YOUR_PROJECT_ID",
+>   "E2E_LOCATION": "DEL-1"
+> }
+> ```
 
+### 2. Cursor
+Add to `.cursor/mcp.json` or Cursor Settings → MCP:
 ```json
 {
   "mcpServers": {
     "e2e-cloud": {
-      "url": "http://localhost:3000/sse"
+      "command": "npx",
+      "args": ["-y", "e2e-mcp"]
+    }
+  }
+}
+```
+
+### 3. Google Antigravity
+Add to `~/.gemini/config/mcp_config.json`:
+```json
+{
+  "mcpServers": {
+    "e2e-cloud": {
+      "command": "npx",
+      "args": ["-y", "e2e-mcp"]
     }
   }
 }
@@ -219,53 +92,102 @@ If the server is running as a daemon on `http://localhost:3000`:
 
 ---
 
-## 🌐 Running in Hosted Mode
+## 🛠️ Available MCP Tools
 
-### Start as a Background Daemon
-```bash
-npm run serve
-# or
-node dist/index.js --http --port 3000
-```
+Once connected, your AI assistant gains access to **40+ specialized cloud tools**:
 
-### Endpoints
-- **Web Dashboard**: `http://localhost:3000/`
-- **MCP SSE Stream**: `http://localhost:3000/sse`
-- **MCP Messages Endpoint**: `http://localhost:3000/messages`
-- **Health Check**: `http://localhost:3000/health`
-- **Connectivity Test**: `http://localhost:3000/api/test`
+### 🖥️ Compute & NVIDIA GPUs
+* `e2e_list_nodes` — List all running VMs and GPU instances with IPs, plans, and regions.
+* `e2e_get_node` — Get full technical specifications, network interfaces, and disk info for a node.
+* `e2e_create_node` — Launch new compute or GPU instances on-demand.
+* `e2e_node_action` — Control node lifecycle: `power_on`, `power_off`, `reboot`, `lock`, `unlock`.
+* `e2e_delete_node` — Terminate and delete an instance.
+* `e2e_list_plans` / `e2e_list_os_images` — Inspect hardware plans, pricing, and operating systems.
+* `e2e_get_node_health` — Retrieve live CPU, memory, and disk health metrics.
+
+### 🤖 TIR AI/ML Cloud
+* `e2e_tir_list_gpu_skus` — List available NVIDIA GPU hardware (H100 SXM5, A100, L40S, L4).
+* `e2e_tir_list_notebooks` / `e2e_tir_create_notebook` — Launch and manage Jupyter AI Labs.
+* `e2e_tir_notebook_action` — Start, stop, or reboot AI Lab notebooks.
+* `e2e_tir_list_model_endpoints` — Monitor deployed LLM inference endpoints.
+* `e2e_tir_list_datasets` — Manage training and fine-tuning datasets.
+* `e2e_tir_list_training_clusters` — Manage Slurm & distributed training clusters.
+
+### 💾 Storage & Buckets
+* `e2e_list_volumes` / `e2e_create_volume` — Manage block storage volumes (SSD/NVMe).
+* `e2e_attach_volume` / `e2e_detach_volume` — Attach or detach block volumes to nodes.
+* `e2e_list_buckets` / `e2e_create_bucket` — S3-compatible EOS Object Storage buckets.
+* `e2e_list_sfs` — Shared File System (SFS/NFS) storage.
+
+### 🌐 Networking & Security
+* `e2e_list_vpcs` / `e2e_create_vpc` — Virtual Private Cloud networks and subnets.
+* `e2e_list_reserved_ips` / `e2e_action_reserved_ip` — Manage static public IP addresses.
+* `e2e_list_security_groups` — Inspect firewalls and security rules.
+* `e2e_list_load_balancers` — Application and Network Load Balancers (ALB / NLB).
+
+### 🗄️ Managed Databases (DBaaS)
+* `e2e_list_databases` / `e2e_create_database` — Provision managed PostgreSQL, MySQL, MariaDB, Kafka.
+* `e2e_get_database` / `e2e_database_action` — Cluster health, topologies, failover, start/stop.
+
+### ☸️ Managed Kubernetes
+* `e2e_list_k8s_clusters` / `e2e_get_k8s_cluster` — Inspect Kubernetes clusters and API endpoints.
+* `e2e_list_k8s_node_pools` — Manage cluster worker node pools.
+
+### 🌐 Universal REST Tool (`e2e_raw_request`)
+* `e2e_raw_request` — Allows Claude to call **any** of E2E's 450+ REST endpoints with automatic authentication, region normalization, and error handling.
 
 ---
 
-## 🐳 Docker Deployment
+## ⚙️ Optional & Advanced Setups
 
-Run with Docker:
+<details>
+<summary><b>1. Multiple Credential Profiles (AWS-Style)</b></summary>
+
+You can maintain separate profiles (e.g. `[default]`, `[production]`, `[staging]`):
 ```bash
-docker build -t e2e-mcp-server .
-docker run -d -p 3000:3000 --env-file .env e2e-mcp-server
+npx -y e2e-mcp configure --profile staging
+npx -y e2e-mcp install --profile staging
 ```
+Stored in `~/.e2e/credentials` and `~/.e2e/config`.
+</details>
 
-Or with Docker Compose:
+<details>
+<summary><b>2. Hosted HTTP / SSE Daemon Mode</b></summary>
+
+Run as a shared HTTP service with SSE and a built-in Web Dashboard:
 ```bash
-docker compose up -d
+npx -y e2e-mcp --http --port 3000
 ```
+* **Dashboard**: `http://localhost:3000/`
+* **SSE Endpoint**: `http://localhost:3000/sse`
+* **Health Check**: `http://localhost:3000/health`
+</details>
 
----
+<details>
+<summary><b>3. Docker & Docker Compose</b></summary>
 
-## 🧪 Testing
-
-Run the included verification suite:
 ```bash
+docker run -d -p 3000:3000 \
+  -e E2E_API_KEY="your_key" \
+  -e E2E_AUTH_TOKEN="your_token" \
+  ghcr.io/vingupta3/e2e-mcp:latest
+```
+</details>
+
+<details>
+<summary><b>4. Running from Source (Contributors)</b></summary>
+
+```bash
+git clone https://github.com/vingupta3/e2e-mcp.git
+cd e2e-mcp
+npm install
 npm test
+npm run build
 ```
-The test suite verifies:
-- Configuration parsing and default propagation
-- Tool registration and schemas
-- Unauthenticated request rejection and helpful error messages
-- Mock HTTP API request serialization, headers, query parameters, and project scoping
-- TIR AI platform routing and error normalization
+See [CONTRIBUTING.md](CONTRIBUTING.md) for pull request guidelines.
+</details>
 
 ---
 
 ## 📄 License
-Apache-2.0
+[Apache 2.0](LICENSE) © 2026 Vinay Gupta
