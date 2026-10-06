@@ -1,0 +1,40 @@
+name: 🐛 Bug Report
+description: File a bug report to help improve e2e-mcp
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue!
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: What AI assistant or environment are you using? (e.g. Claude Desktop 0.7, Cursor 0.44, Google Antigravity, Node 20/22)
+      placeholder: e.g. Claude Desktop on macOS
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps To Reproduce
+      description: How can we reproduce the behavior?
+      placeholder: |
+        1. Run `npx e2e-mcp ...`
+        2. Call tool `e2e_list_nodes`
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs & Error Output
+      description: Please paste any relevant error logs or outputs. (Ensure NO API keys or tokens are included!)
+      render: shell
