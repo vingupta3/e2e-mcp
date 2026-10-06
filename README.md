@@ -11,14 +11,17 @@ Connect **Claude Desktop**, **Cursor**, **Google Antigravity**, and **Codex** di
 
 ---
 
-## ⚡ Quickstart (Zero Installation via `npx`)
+## ⚡ Quickstart (`npm install`)
 
-You do **not** need to clone this repository or install anything globally. You can set it up in two simple commands using `npx`:
-
-### Step 1: Configure your E2E credentials
-Run the interactive configuration wizard (like `aws configure`):
+### Step 1: Install globally via npm
 ```bash
-npx -y e2e-mcp configure
+npm install -g e2e-mcp
+```
+
+### Step 2: Configure your E2E credentials
+Run the interactive setup wizard (like `aws configure`):
+```bash
+e2e-mcp configure
 ```
 This prompts for:
 * **E2E API Key** (from [MyAccount → Security / API Tokens](https://myaccount.e2enetworks.com))
@@ -26,10 +29,10 @@ This prompts for:
 * **Default Location** (e.g. `DEL-1` or `NCR-1`)
 * *Saved securely to `~/.e2e/credentials` (chmod 0600)*.
 
-### Step 2: Auto-install into your AI Assistant
-Automatically register the MCP server in Claude Desktop, Cursor, and Antigravity:
+### Step 3: Auto-register with your AI Assistant
+Automatically register the MCP server in Claude Desktop, Cursor, Google Antigravity, and Codex:
 ```bash
-npx -y e2e-mcp install
+e2e-mcp install
 ```
 Restart your AI assistant, and you're ready!
 
@@ -46,15 +49,14 @@ Add to your config (`~/Library/Application Support/Claude/claude_desktop_config.
 {
   "mcpServers": {
     "e2e-cloud": {
-      "command": "npx",
-      "args": ["-y", "e2e-mcp"]
+      "command": "e2e-mcp"
     }
   }
 }
 ```
 
 > [!TIP]
-> If you didn't run `npx e2e-mcp configure`, you can pass credentials directly in the `env` block:
+> If you didn't run `e2e-mcp configure`, you can pass credentials directly in the `env` block:
 > ```json
 > "env": {
 >   "E2E_API_KEY": "YOUR_API_KEY",
@@ -70,8 +72,7 @@ Add to `.cursor/mcp.json` or Cursor Settings → MCP:
 {
   "mcpServers": {
     "e2e-cloud": {
-      "command": "npx",
-      "args": ["-y", "e2e-mcp"]
+      "command": "e2e-mcp"
     }
   }
 }
@@ -83,8 +84,7 @@ Add to `~/.gemini/config/mcp_config.json`:
 {
   "mcpServers": {
     "e2e-cloud": {
-      "command": "npx",
-      "args": ["-y", "e2e-mcp"]
+      "command": "e2e-mcp"
     }
   }
 }
@@ -145,8 +145,8 @@ Once connected, your AI assistant gains access to **40+ specialized cloud tools*
 
 You can maintain separate profiles (e.g. `[default]`, `[production]`, `[staging]`):
 ```bash
-npx -y e2e-mcp configure --profile staging
-npx -y e2e-mcp install --profile staging
+e2e-mcp configure --profile staging
+e2e-mcp install --profile staging
 ```
 Stored in `~/.e2e/credentials` and `~/.e2e/config`.
 </details>
@@ -156,7 +156,7 @@ Stored in `~/.e2e/credentials` and `~/.e2e/config`.
 
 Run as a shared HTTP service with SSE and a built-in Web Dashboard:
 ```bash
-npx -y e2e-mcp --http --port 3000
+e2e-mcp --http --port 3000
 ```
 * **Dashboard**: `http://localhost:3000/`
 * **SSE Endpoint**: `http://localhost:3000/sse`
