@@ -5,8 +5,8 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "e2e-mcp": "./dist/index.js",
-    "e2e-mcp-server": "./dist/index.js"
+    "e2e-mcp": "dist/index.js",
+    "e2e-mcp-server": "dist/index.js"
   },
   "files": [
     "dist",
