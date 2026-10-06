@@ -45,17 +45,17 @@ AWS-Style Profile Resolution:
   1. CLI parameters / tool arguments
   2. Environment variables (E2E_API_KEY, E2E_AUTH_TOKEN)
   3. Local .env file
-  4. ~/.e2e/credentials and ~/.e2e/config profiles ([default], [realbetter-account], etc.)
+  4. ~/.e2e/credentials and ~/.e2e/config profiles ([default], [production], etc.)
 
 Examples:
   # Configure credentials like "aws configure":
-  npx e2e-mcp configure --profile realbetter-account
+  npx e2e-mcp configure --profile production
 
   # Install into Claude Desktop and Cursor automatically:
-  npx e2e-mcp install --profile realbetter-account
+  npx e2e-mcp install --profile production
 
   # Run standard stdio server:
-  npx e2e-mcp --profile realbetter-account
+  npx e2e-mcp --profile production
 `);
     process.exit(0);
   }

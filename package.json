@@ -1,19 +1,26 @@
 {
-  "name": "e2e-mcp-server",
+  "name": "e2e-mcp",
   "version": "1.0.0",
   "description": "Model Context Protocol (MCP) Server for E2E Networks Cloud REST API & TIR AI Platform",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "e2e-mcp": "./dist/index.js"
+    "e2e-mcp": "./dist/index.js",
+    "e2e-mcp-server": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "serve": "node dist/index.js --http",
     "dev": "tsx src/index.ts",
     "dev:http": "tsx src/index.ts --http",
-    "test": "tsx test/server.test.ts"
+    "test": "tsx test/server.test.ts",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "mcp",
@@ -27,6 +34,14 @@
   ],
   "author": "E2E Cloud Team",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vingupta3/e2e-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vingupta3/e2e-mcp/issues"
+  },
+  "homepage": "https://github.com/vingupta3/e2e-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
     "cors": "^2.8.6",

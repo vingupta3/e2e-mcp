@@ -49,7 +49,7 @@ export function parseIniFile(filePath: string): Record<string, Record<string, st
 
       if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
         let section = trimmed.slice(1, -1).trim();
-        // Handle "[profile realbetter-account]" syntax like AWS config
+        // Handle "[profile production]" syntax like AWS config
         if (section.toLowerCase().startsWith('profile ')) {
           section = section.slice(8).trim();
         }

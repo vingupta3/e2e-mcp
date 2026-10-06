@@ -134,21 +134,21 @@ Production-ready [Model Context Protocol (MCP)](https://modelcontextprotocol.io/
 
 ## ⚡ AWS-Style Profile Setup (Recommended)
 
-Just like AWS uses `~/.aws/credentials` and `~/.aws/config` with named profiles (e.g. `[default]`, `[realbetter-account]`), the E2E MCP Server uses `~/.e2e/credentials` and `~/.e2e/config`.
+Just like AWS uses `~/.aws/credentials` and `~/.aws/config` with named profiles (e.g. `[default]`, `[production]`), the E2E MCP Server uses `~/.e2e/credentials` and `~/.e2e/config`.
 
 ### 1. Configure Credentials (like `aws configure`)
 Run the interactive setup wizard:
 ```bash
 # Configure default profile
-node dist/index.js configure
+npx e2e-mcp configure
 
-# Or configure a specific named profile (e.g. realbetter-account)
-node dist/index.js configure --profile realbetter-account
+# Or configure a specific named profile (e.g. production)
+npx e2e-mcp configure --profile production
 ```
 You can also set credentials non-interactively via flags:
 ```bash
-node dist/index.js configure \
-  --profile realbetter-account \
+npx e2e-mcp configure \
+  --profile production \
   --api-key YOUR_E2E_API_KEY \
   --auth-token YOUR_E2E_AUTH_TOKEN \
   --project-id 12345 \
@@ -157,14 +157,16 @@ node dist/index.js configure \
 This stores your credentials securely in `~/.e2e/credentials` (with `0600` permissions) and configuration in `~/.e2e/config`.
 
 ### 2. One-Command Auto-Installation into Claude & Cursor
-Just like `aws-mcp` is registered seamlessly in Claude Desktop and Cursor without hardcoding secrets:
+Just like `aws-mcp` is registered seamlessly in Claude Desktop, Cursor, Google Antigravity, and Codex without hardcoding secrets:
 ```bash
-# Auto-configure both Claude Desktop and Cursor
-node dist/index.js install --profile realbetter-account
+# Auto-configure all supported AI assistants
+npx e2e-mcp install --profile production
 ```
 This automatically updates:
 - **Claude Desktop**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Cursor**: `~/.cursor/mcp.json`
+- **Google Antigravity**: `~/.gemini/config/mcp_config.json`
+- **Codex CLI**: `~/.codex/config.toml`
 (creating automatic timestamped `.bak` backups before modifying).
 
 ---
@@ -184,8 +186,8 @@ Edit your Claude Desktop configuration file:
 {
   "mcpServers": {
     "e2e-cloud": {
-      "command": "node",
-      "args": ["/Users/vinaygupta/Desktop/Projects-Active/e2e-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "e2e-mcp"],
       "env": {
         "E2E_API_KEY": "YOUR_API_KEY",
         "E2E_AUTH_TOKEN": "YOUR_AUTH_TOKEN",

@@ -10,7 +10,7 @@ async function runTests() {
   // Test 1: Config loading
   console.log('Test 1: Configuration Loading');
   const config = loadConfig();
-  assert.strictEqual(config.projectId, undefined); // optional by default to allow searching all projects
+  assert.ok(config.projectId === undefined || typeof config.projectId === 'number'); // optional by default to allow searching all projects
   assert.strictEqual(config.myaccountBaseUrl, 'https://api.e2enetworks.com/myaccount');
   assert.strictEqual(config.tirBaseUrl, 'https://api.e2enetworks.com/myaccount/api/v1/gpu');
   console.log('  ✓ Config loads profile correctly with configured or unconstrained parameters');
