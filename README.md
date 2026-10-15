@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/vingupta3/e2e-mcp)](https://github.com/vingupta3/e2e-mcp/releases)
 
-The open-source [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for **E2E Networks Cloud** and the **TIR AI/ML Platform**. 
+The community [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for **E2E Networks Cloud** and the **TIR AI/ML Platform**. 
 
 Connect **Claude Desktop**, **Cursor**, **Google Antigravity**, and **Codex** directly to your E2E Cloud infrastructure to provision GPUs, manage nodes, control databases, orchestrate Kubernetes, and run AI workloads.
 
