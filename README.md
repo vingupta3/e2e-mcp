@@ -136,6 +136,15 @@ Once connected, your AI assistant gains access to **40+ specialized cloud tools*
 ### 🌐 Universal REST Tool (`e2e_raw_request`)
 * `e2e_raw_request` — Allows Claude to call **any** of E2E's 450+ REST endpoints with automatic authentication, region normalization, and error handling.
 
+### 🔒 Read-only mode & tool annotations
+Set `E2E_READ_ONLY=true` in the server's environment to expose only the list/get tools. Create, delete, attach, detach and action tools (and `e2e_configure_credentials`) are not registered, and `e2e_raw_request` rejects any method other than `GET`.
+
+**Limit which tools exist.** `E2E_ENABLED_TOOLS` (allowlist) and `E2E_DISABLED_TOOLS` (denylist) take comma-separated tool names or groups: `compute`, `storage`, `network`, `database`, `kubernetes`, `tir`, `platform`, `raw`. Example: `E2E_ENABLED_TOOLS=compute,network` or `E2E_DISABLED_TOOLS=raw,e2e_delete_node`. The denylist wins when both match.
+
+**Confirm step.** Destructive and state-changing tools (and non-GET `e2e_raw_request` calls) take a `confirm` argument and refuse to run unless it is `true`, returning a message telling the assistant to get the user's explicit approval first. This is a guardrail against accidental or prompt-injected calls, not a hard boundary, since the model supplies the argument. For a hard boundary use read-only mode or the allowlist. Set `E2E_REQUIRE_CONFIRM=false` for unattended automation.
+
+Every tool also carries MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`) so clients can prompt before destructive calls. Tools not explicitly classified default to destructive.
+
 ---
 
 ## ⚙️ Optional & Advanced Setups

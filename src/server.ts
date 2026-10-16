@@ -9,6 +9,7 @@ import { registerKubernetesTools } from './tools/kubernetes.js';
 import { registerTIRTools } from './tools/tir.js';
 import { registerPlatformTools } from './tools/platform.js';
 import { registerRawRequestTool } from './tools/raw.js';
+import { applyToolPolicy } from './tools/policy.js';
 
 export function createE2EMcpServer(config: E2EConfig): { server: McpServer; client: E2EClient } {
   const client = new E2EClient(config);
@@ -26,14 +27,29 @@ export function createE2EMcpServer(config: E2EConfig): { server: McpServer; clie
     }
   );
 
+  const setGroup = applyToolPolicy(server, {
+    readOnly: config.readOnly,
+    enabledTools: config.enabledTools,
+    disabledTools: config.disabledTools,
+    requireConfirm: config.requireConfirm,
+  });
+
   // Register all tool modules
+  setGroup('compute');
   registerComputeTools(server, client);
+  setGroup('storage');
   registerStorageTools(server, client);
+  setGroup('network');
   registerNetworkTools(server, client);
+  setGroup('database');
   registerDatabaseTools(server, client);
+  setGroup('kubernetes');
   registerKubernetesTools(server, client);
+  setGroup('tir');
   registerTIRTools(server, client);
+  setGroup('platform');
   registerPlatformTools(server, client);
+  setGroup('raw');
   registerRawRequestTool(server, client);
 
   // Register MCP Resources

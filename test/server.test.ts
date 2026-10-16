@@ -22,6 +22,37 @@ async function runTests() {
   assert.ok(client);
   console.log('  ✓ Server and client initialized successfully');
 
+  // Test 2b: Read-only mode and annotations
+  console.log('\nTest 2b: Read-only Mode & Tool Annotations');
+  const tools = (server as any)._registeredTools;
+  assert.strictEqual(tools['e2e_delete_node'].annotations.destructiveHint, true);
+  assert.strictEqual(tools['e2e_list_nodes'].annotations.readOnlyHint, true);
+  const { server: roServer } = createE2EMcpServer({ ...config, readOnly: true });
+  const roTools = Object.keys((roServer as any)._registeredTools);
+  assert.ok(roTools.includes('e2e_list_nodes') && roTools.includes('e2e_raw_request'));
+  assert.ok(!roTools.some(n => /create|delete|attach|detach|action|configure/.test(n)));
+  console.log('  ✓ Read-only mode hides mutating tools; annotations set');
+
+  // Test 2c: Group/name filtering and confirm gate
+  console.log('\nTest 2c: Tool Filtering & Confirm Gate');
+  const names = (c: any) => Object.keys((createE2EMcpServer(c).server as any)._registeredTools);
+  const onlyNet = names({ ...config, enabledTools: ['network'] });
+  assert.ok(onlyNet.includes('e2e_list_vpcs') && !onlyNet.includes('e2e_list_nodes'));
+  const noDb = names({ ...config, disabledTools: ['database', 'e2e_delete_node'] });
+  assert.ok(!noDb.includes('e2e_list_databases') && !noDb.includes('e2e_delete_node') && noDb.includes('e2e_list_nodes'));
+  const delTool = tools['e2e_delete_node'];
+  assert.ok('confirm' in delTool.inputSchema.shape);
+  const blocked = await (delTool.handler ?? delTool.callback)({ node_id: '1' }, {});
+  assert.strictEqual(blocked.isError, true);
+  assert.ok(blocked.content[0].text.includes('Confirmation required'));
+  const rawTool = tools['e2e_raw_request'];
+  const rawBlocked = await (rawTool.handler ?? rawTool.callback)({ method: 'DELETE', path: '/x/', service: 'myaccount' }, {});
+  assert.ok(rawBlocked.content[0].text.includes('Confirmation required'));
+  assert.ok(!('confirm' in tools['e2e_list_nodes'].inputSchema.shape));
+  const noConfirm = (createE2EMcpServer({ ...config, requireConfirm: false }).server as any)._registeredTools;
+  assert.ok(!('confirm' in noConfirm['e2e_delete_node'].inputSchema.shape));
+  console.log('  ✓ Filtering by tool/group works; destructive calls require confirm: true');
+
   // Test 3: Client handles missing credentials gracefully
   console.log('\nTest 3: Missing Credentials Validation');
   const emptyClient = new E2EClient({

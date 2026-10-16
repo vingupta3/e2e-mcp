@@ -16,6 +16,10 @@ export interface E2EConfig {
   tirBaseUrl: string;
   port: number;
   host: string;
+  readOnly: boolean;
+  enabledTools: string[];
+  disabledTools: string[];
+  requireConfirm: boolean;
   credentialsPath?: string;
   configPath?: string;
 }
@@ -183,6 +187,11 @@ export function loadConfig(profileOverride?: string): E2EConfig {
 
   const port = parseInt(process.env.PORT || '3000', 10);
   const host = process.env.HOST || '0.0.0.0';
+  const parseList = (v?: string) => (v || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+  const enabledTools = parseList(process.env.E2E_ENABLED_TOOLS);
+  const disabledTools = parseList(process.env.E2E_DISABLED_TOOLS);
+  const requireConfirm = !['0', 'false', 'no'].includes((process.env.E2E_REQUIRE_CONFIRM || '').toLowerCase());
+  const readOnly = ['1', 'true', 'yes'].includes((process.env.E2E_READ_ONLY || '').toLowerCase());
 
   return {
     profile,
@@ -194,6 +203,10 @@ export function loadConfig(profileOverride?: string): E2EConfig {
     tirBaseUrl,
     port,
     host,
+    readOnly,
+    enabledTools,
+    disabledTools,
+    requireConfirm,
     credentialsPath,
     configPath,
   };
