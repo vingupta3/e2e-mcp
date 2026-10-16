@@ -18,6 +18,12 @@ export function registerRawRequestTool(server: McpServer, client: E2EClient): vo
       location: z.string().optional().describe('Override location/region code for this request.'),
     },
     async (args) => {
+      if (client.getConfig().readOnly && args.method !== 'GET') {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Blocked: E2E_READ_ONLY is enabled, so only GET requests are allowed (got ${args.method}).` }],
+        };
+      }
       try {
         const response = await client.request({
           method: args.method,
